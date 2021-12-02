@@ -1,5 +1,5 @@
-from PySide2.QtCore import QAbstractTableModel
-from PySide2.QtCore import Qt
+from PySide2.QtCore import QAbstractTableModel, QObject
+from PySide2.QtCore import Qt, Signal
 import numpy as np
 
 ROW_COUNT = 8
@@ -16,24 +16,40 @@ FLAG = -1
 #value:
 MINE = -1
 
+class GameWon(QObject):
+    signal = Signal()
+
+class GameOver(QObject):
+    signal = Signal()
+
+gameWon = GameWon()
+gameOver = GameOver()
+
 class MinesweeperModel(QAbstractTableModel):
     def __init__(self, parent = None):
         super(MinesweeperModel, self).__init__(parent)
         self._data = []
-        self.visitedZeros = []
+        self.clicked = []
         self.newGame()
 
     def newGame(self):
-        mines = [HIDE, MINE] * MINE_COUNT
-        rest = [HIDE, 0] * (COLUMN_COUNT * ROW_COUNT - MINE_COUNT)
+        self.beginResetModel()
+
+        self.clicked = []
+
+        mines = [[HIDE, MINE]] * MINE_COUNT
+        rest = [[HIDE, 0]] * (COLUMN_COUNT * ROW_COUNT - MINE_COUNT)
         self._data = np.concatenate((mines, rest), axis=0)
         np.random.shuffle(self._data)
         self._data = self._data.reshape((ROW_COUNT, COLUMN_COUNT, 2))
         
         for x in range(self.rowCount()):
             for y in range(self.columnCount()):
-                if self._data[x][y][1] is MINE:
+                index = self.index(x, y)
+                if index.data()[1] == MINE:
                     self.calculateAdjacent(x, y)
+
+        self.endResetModel()
         
     def isInBounds(self, x, y):
         if x < self.rowCount() and x >= 0 and y < self.columnCount() and y >= 0:
@@ -48,15 +64,20 @@ class MinesweeperModel(QAbstractTableModel):
 
     def calculateAdjacent(self, x: int, y: int):
         for a, b in self.findAdjacent(x, y):
-            self._data[a][b][1] += 1 
+            index = self.index(a, b)
+            if index.data()[1] != MINE:
+                index.data()[1] += 1
 
     def findAllZeros(self, x, y):
         for a, b in self.findAdjacent(x, y):
-            if self._data[a][b][1] == 0 and (a, b) not in self.visitedZeros:
-                index = self.index(a, b)
+            index = self.index(a, b)
+            if index.data()[1] == 0:
+                if index not in self.clicked:
+                    self.setData(index, DISPLAY)
+                    self.clicked.append(index)
+                    self.findAllZeros(a, b)
+            else:
                 self.setData(index, DISPLAY)
-                self.visitedZeros.append((a, b))
-                self.findAllZeros(a, b)
 
     def setAsFlaged(self, x, y):
         index = self.index(x, y)
@@ -65,20 +86,34 @@ class MinesweeperModel(QAbstractTableModel):
     def setAsClicked(self, x, y):
         index = self.index(x, y)
         self.setData(index, DISPLAY)
+        if index.data()[1] == 0:
+            self.findAllZeros(x, y)
+        elif index.data()[1] == MINE:
+            gameOver.signal.emit()
+        self.clicked.append(index)
+        self.checkIfWon()
     
+    def checkIfWon(self):
+        if len(self.clicked) == COLUMN_COUNT * ROW_COUNT - MINE_COUNT:
+            gameWon.signal.emit()
+
     def rowCount(self, parent = None):
         return len(self._data)
 
     def columnCount(self, parent = None):
         return len(self._data[0])
 
-    def setData(self, index, value, role= None):
-        self._data[index.row()][index.column()][0] = value
-        self.dataChanged.emit(index, index)
+    def setData(self, index, value, role = None):
+        try:
+            self._data[index.row()][index.column()][0] = value
+            self.dataChanged.emit(index, index)
+        except:
+            return False
+        return True
 
     def data(self, index, role = None):
         return self._data[index.row()][index.column()]
 
 if __name__ == "__main__":
-    a = MinesweeperModel()
-    a.newGame()
+    model = MinesweeperModel()
+    model.newGame()

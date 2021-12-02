@@ -13,7 +13,7 @@ class Minesweeper(QMainWindow):
     def __init__(self, model: MinesweeperModel, delegate: MinesweeperDelegate):
         super(Minesweeper, self).__init__()
         self.load_ui("Minesweeper.ui", self)
-        self.clock = TimeCounter(self.timerDisplay)
+        self.clock = TimeCounter(self.Stopwatch)
 
         self.gameWonWindow = QDialog()
         self.load_ui("GameWonWindow.ui", self.gameWonWindow)
@@ -25,24 +25,24 @@ class Minesweeper(QMainWindow):
         self.gameOverWindow.OkButton.clicked.connect(model.newGame)
         self.gameOverWindow.OkButton.clicked.connect(self.clock.resetTime)
 
-        self.mineField.setModel(model)
-        self.mineField.setItemDelegate(delegate)
+        self.Minefiled.setModel(model)
+        self.Minefiled.setItemDelegate(delegate)
 
-        self.mineField.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        self.mineField.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.Minefiled.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.Minefiled.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        updateFlagCount.signal.connect(self.mineCountDisplay.display)
+        updateFlagCount.signal.connect(self.FlagCount.display)
         gameOver.signal.connect(self.clock.stopTime)
         gameOver.signal.connect(self.gameOverWindow.exec_)
         gameWon.signal.connect(self.clock.stopTime)
         gameWon.signal.connect(self.gameWonWindow.exec_)
         self.action_New_Game.triggered.connect(model.newGame)
         self.action_New_Game.triggered.connect(self.clock.resetTime)
-        self.resetButton.clicked.connect(model.newGame)
-        self.resetButton.clicked.connect(self.clock.resetTime)
-        self.mineField.children()[0].installEventFilter(self)
+        self.NewGameButton.clicked.connect(model.newGame)
+        self.NewGameButton.clicked.connect(self.clock.resetTime)
+        self.Minefiled.children()[0].installEventFilter(self)
 
-        self.mineCountDisplay.display("10")
+        self.FlagCount.display("10")
 
     def load_ui(self, filename, widget):
         path = os.fspath(Path(__file__).resolve().parent / filename)
@@ -53,8 +53,8 @@ class Minesweeper(QMainWindow):
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.MouseButtonPress:
-            row = self.mineField.rowAt(event.y())
-            column = self.mineField.columnAt(event.x())
+            row = self.Minefiled.rowAt(event.y())
+            column = self.Minefiled.columnAt(event.x())
             if event.button() == Qt.RightButton:
                 model.setAsFlaged(row, column)
             elif event.button() == Qt.LeftButton:

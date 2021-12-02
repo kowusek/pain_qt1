@@ -29,13 +29,13 @@ class MinesweeperModel(QAbstractTableModel):
     def __init__(self, parent = None):
         super(MinesweeperModel, self).__init__(parent)
         self._data = []
-        self.clicked = []
+        self.clicked = set()
         self.newGame()
 
     def newGame(self):
         self.beginResetModel()
 
-        self.clicked = []
+        self.clicked = set()
 
         mines = [[HIDE, MINE]] * MINE_COUNT
         rest = [[HIDE, 0]] * (COLUMN_COUNT * ROW_COUNT - MINE_COUNT)
@@ -74,9 +74,10 @@ class MinesweeperModel(QAbstractTableModel):
             if index.data()[1] == 0:
                 if index not in self.clicked:
                     self.setData(index, DISPLAY)
-                    self.clicked.append(index)
+                    self.clicked.add(index)
                     self.findAllZeros(a, b)
             else:
+                self.clicked.add(index)
                 self.setData(index, DISPLAY)
 
     def setAsFlaged(self, x, y):
@@ -90,7 +91,7 @@ class MinesweeperModel(QAbstractTableModel):
             self.findAllZeros(x, y)
         elif index.data()[1] == MINE:
             gameOver.signal.emit()
-        self.clicked.append(index)
+        self.clicked.add(index)
         self.checkIfWon()
     
     def checkIfWon(self):

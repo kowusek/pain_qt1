@@ -1,4 +1,4 @@
-from PySide2.QtWidgets import QStyledItemDelegate
+from PySide2.QtWidgets import QAbstractItemDelegate
 
-class MinesweeperDelegate(QStyledItemDelegate):
+class MinesweeperDelegate(QAbstractItemDelegate):
     pass

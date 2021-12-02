@@ -5,7 +5,7 @@ import sys
 from PySide2.QtWidgets import QApplication, QDialog, QHeaderView, QMainWindow
 from PySide2.QtCore import QFile, QEvent, Qt
 from UiLoader import loadUi
-from MinesweeperModel import MinesweeperModel, gameOver, gameWon, updateFlagCount
+from MinesweeperModel import MinesweeperModel#, gameOver, gameWon, updateFlagCount
 from MinesweeperDelegate import MinesweeperDelegate
 from Counters import TimeCounter
 
@@ -15,15 +15,15 @@ class Minesweeper(QMainWindow):
         self.load_ui("Minesweeper.ui", self)
         self.clock = TimeCounter(self.Stopwatch)
 
-        self.gameWonWindow = QDialog()
-        self.load_ui("GameWonWindow.ui", self.gameWonWindow)
-        self.gameWonWindow.OkButton.clicked.connect(model.newGame)
-        self.gameWonWindow.OkButton.clicked.connect(self.clock.resetTime)
+        # self.gameWonWindow = QDialog()
+        # self.load_ui("GameWonWindow.ui", self.gameWonWindow)
+        # self.gameWonWindow.OkButton.clicked.connect(model.newGame)
+        # self.gameWonWindow.OkButton.clicked.connect(self.clock.resetTime)
 
-        self.gameOverWindow = QDialog()
-        self.load_ui("GameOverWindow.ui", self.gameOverWindow)
-        self.gameOverWindow.OkButton.clicked.connect(model.newGame)
-        self.gameOverWindow.OkButton.clicked.connect(self.clock.resetTime)
+        # self.gameOverWindow = QDialog()
+        # self.load_ui("GameOverWindow.ui", self.gameOverWindow)
+        # self.gameOverWindow.OkButton.clicked.connect(model.newGame)
+        # self.gameOverWindow.OkButton.clicked.connect(self.clock.resetTime)
 
         self.Minefiled.setModel(model)
         self.Minefiled.setItemDelegate(delegate)
@@ -31,11 +31,11 @@ class Minesweeper(QMainWindow):
         self.Minefiled.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.Minefiled.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        updateFlagCount.signal.connect(self.FlagCount.display)
-        gameOver.signal.connect(self.clock.stopTime)
-        gameOver.signal.connect(self.gameOverWindow.exec_)
-        gameWon.signal.connect(self.clock.stopTime)
-        gameWon.signal.connect(self.gameWonWindow.exec_)
+        # updateFlagCount.signal.connect(self.FlagCount.display)
+        # gameOver.signal.connect(self.clock.stopTime)
+        # gameOver.signal.connect(self.gameOverWindow.exec_)
+        # gameWon.signal.connect(self.clock.stopTime)
+        # gameWon.signal.connect(self.gameWonWindow.exec_)
         self.action_New_Game.triggered.connect(model.newGame)
         self.action_New_Game.triggered.connect(self.clock.resetTime)
         self.NewGameButton.clicked.connect(model.newGame)

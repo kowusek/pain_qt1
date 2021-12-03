@@ -22,20 +22,26 @@ class GameWon(QObject):
 class GameOver(QObject):
     signal = Signal()
 
+class UpdateFlagCount(QObject):
+    signal = Signal(int)
+
 gameWon = GameWon()
 gameOver = GameOver()
+updateFlagCount = UpdateFlagCount()
 
 class MinesweeperModel(QAbstractTableModel):
     def __init__(self, parent = None):
         super(MinesweeperModel, self).__init__(parent)
         self._data = []
         self.clicked = set()
+        self.flagCount = 10
         self.newGame()
 
     def newGame(self):
         self.beginResetModel()
 
         self.clicked = set()
+        self.flagCount = 10
 
         mines = [[HIDE, MINE]] * MINE_COUNT
         rest = [[HIDE, 0]] * (COLUMN_COUNT * ROW_COUNT - MINE_COUNT)
@@ -81,8 +87,11 @@ class MinesweeperModel(QAbstractTableModel):
                 self.setData(index, DISPLAY)
 
     def setAsFlaged(self, x, y):
-        index = self.index(x, y)
-        self.setData(index, FLAG)
+        if self.flagCount > 0:
+            index = self.index(x, y)
+            self.setData(index, FLAG)
+            self.flagCount -= 1
+            updateFlagCount.signal.emit(self.flagCount)
 
     def setAsClicked(self, x, y):
         index = self.index(x, y)
@@ -106,6 +115,9 @@ class MinesweeperModel(QAbstractTableModel):
 
     def setData(self, index, value, role = None):
         try:
+            if self._data[index.row()][index.column()][0] == FLAG:
+                self.flagCount += 1
+                updateFlagCount.signal.emit(self.flagCount)
             self._data[index.row()][index.column()][0] = value
             self.dataChanged.emit(index, index)
         except:

@@ -5,7 +5,7 @@ import sys
 from PySide2.QtWidgets import QApplication, QDialog, QHeaderView, QMainWindow, QMessageBox
 from PySide2.QtCore import QFile, QEvent, Qt
 from UiLoader import loadUi
-from MinesweeperModel import MinesweeperModel, gameOver, gameWon#, updateFlagCount
+from MinesweeperModel import MinesweeperModel, gameOver, gameWon, updateFlagCount
 from MinesweeperDelegate import MinesweeperDelegate
 from Counters import TimeCounter
 
@@ -22,7 +22,7 @@ class Minesweeper(QMainWindow):
         self.Minefiled.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.Minefiled.verticalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        # updateFlagCount.signal.connect(self.FlagCount.display)
+        updateFlagCount.signal.connect(self.FlagCount.display)
         gameOver.signal.connect(self.clock.stopTime)
         gameOver.signal.connect(self.gameOver)
         gameWon.signal.connect(self.clock.stopTime)
